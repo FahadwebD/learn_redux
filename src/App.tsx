@@ -1,4 +1,4 @@
-import React, { useCallback, useReducer, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 // import Lists from './components/Lists';
@@ -20,6 +20,7 @@ function App() {
 
 
   function reducer(state: Todo[], action: ActionType){
+    
     switch (action.type) {
     case "ADD":
       return [
@@ -27,6 +28,7 @@ function App() {
         {
           id: state.length,
           text: action.text,
+          
         },
       ];
       case "REMOVE":
@@ -35,25 +37,50 @@ function App() {
 }
 
 const [todos , dispatch] = useReducer(reducer,[]);
+const [items , setItems] = useState(todos)
 const newTodoRef = useRef<HTMLInputElement>(null);
 // {} === {} // false
 // useCallback
 const onAddTodo = useCallback(() => {
+
+ 
   if (newTodoRef.current) {
+    
     dispatch({
       type: "ADD",
       text: newTodoRef.current.value,
     });
     newTodoRef.current.value = "";
+    
   }
+  
 }, []);
+
+useEffect(()=>{
+  if(todos.length){
+    localStorage.setItem("info", JSON.stringify(todos));
+  }
+},[todos])
+
+
+  
+useEffect(()=>{
+  const getDb = () => localStorage.getItem('info');
+
+  const getStoredCart = () => {
+    const exists = getDb();
+    return exists ? JSON.parse(exists) : {};
+  }
+  const itemss = getStoredCart()
+  setItems(itemss)
+}, [todos])
 
   return (
     <div className="App">
 
 <input type="text" ref={newTodoRef} />
       <button onClick={onAddTodo}>Add</button>
-      {todos.map((todo) => (
+      {items.map((todo) => (
         <div key={todo.id}>
           {todo.text}
           <button onClick={() => dispatch({ type: "REMOVE", id: todo.id })}>
